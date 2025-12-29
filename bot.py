@@ -1,4 +1,9 @@
 import asyncio
+import os
+import asyncio
+from aiogram import F
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart, Command
 from aiogram.types import (
@@ -202,5 +207,42 @@ async def main():
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+   admin_kb = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="📊 Статистика")],
+        [KeyboardButton(text="📦 Заявки")],
+        [KeyboardButton(text="⬅️ Назад")]
+    ],
+    resize_keyboard=True
+)
+
+
+@dp.message(F.text == "/admin")
+async def admin_panel(message: Message):
+    if message.from_user.id not in ADMIN_IDS:
+        await message.answer("⛔ Немає доступу")
+        return
+
+    await message.answer(
+        "🔐 Адмін-панель",
+        reply_markup=admin_kb
+    )
+
+
+@dp.message(F.text == "📊 Статистика")
+async def admin_stats(message: Message):
+    if message.from_user.id not in ADMIN_IDS:
+        return
+
+    await message.answer("📊 Поки що статистика пуста")
+
+
+@dp.message(F.text == "⬅️ Назад")
+async def admin_back(message: Message):
+    if message.from_user.id not in ADMIN_IDS:
+        return
+
+    await message.answer("Повернувся в головне меню")
+ asyncio.run(main())
+
 
