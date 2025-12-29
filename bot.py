@@ -1,9 +1,5 @@
 import asyncio
 import os
-import asyncio
-from aiogram import F
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart, Command
 from aiogram.types import (
@@ -207,42 +203,63 @@ async def main():
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
-   admin_kb = ReplyKeyboardMarkup(
+    asyncio.run(main())
+def is_admin(user_id: int) -> bool:
+    ADMINS = list(map(int, os.getenv("ADMINS", "").split(",")))
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+
+admin_kb = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text="📊 Статистика")],
-        [KeyboardButton(text="📦 Заявки")],
-        [KeyboardButton(text="⬅️ Назад")]
+        [KeyboardButton(text="📋 Всі замовлення")],
+        [KeyboardButton(text="🆕 Нові замовлення")],
+        [KeyboardButton(text="👤 Користувачі")],
+        [KeyboardButton(text="⚙️ Налаштування")],
     ],
     resize_keyboard=True
 )
-
-
-@dp.message(F.text == "/admin")
+@dp.message(Command("admin"))
 async def admin_panel(message: Message):
-    if message.from_user.id not in ADMIN_IDS:
-        await message.answer("⛔ Немає доступу")
+    if not is_admin(message.from_user.id):
+        await message.answer("⛔ У вас немає доступу")
         return
 
     await message.answer(
         "🔐 Адмін-панель",
         reply_markup=admin_kb
     )
-
-
-@dp.message(F.text == "📊 Статистика")
-async def admin_stats(message: Message):
-    if message.from_user.id not in ADMIN_IDS:
+@dp.message(lambda m: m.text == "📋 Всі замовлення")
+async def all_orders(message: Message):
+    if not is_admin(message.from_user.id):
         return
 
-    await message.answer("📊 Поки що статистика пуста")
-
-
-@dp.message(F.text == "⬅️ Назад")
-async def admin_back(message: Message):
-    if message.from_user.id not in ADMIN_IDS:
+    await message.answer("📋 Тут буде список всіх замовлень")
+@dp.message(lambda m: m.text == "🆕 Нові замовлення")
+async def new_orders(message: Message):
+    if not is_admin(message.from_user.id):
         return
 
-    await message.answer("Повернувся в головне меню")
- asyncio.run(main())
+    await message.answer("🆕 Тут будуть нові замовлення")
+@dp.message(lambda m: m.text == "👤 Користувачі")
+async def users_list(message: Message):
+    if not is_admin(message.from_user.id):
+        return
+
+    await message.answer("👤 Тут буде список користувачів")
+@dp.message(lambda m: m.text == "⚙️ Налаштування")
+async def settings(message: Message):
+    if not is_admin(message.from_user.id):
+        return
+
+    await message.answer("⚙️ Налаштування бота (буде далі)")
+import asyncio
+
+async def main():
+    print("🤖 Бот запущений")
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
+
 
 
